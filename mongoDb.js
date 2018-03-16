@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 mongoose.connect(config.connection);
 
 const playerSchema = mongoose.Schema({
+    nickName: String,
     name: String,
     skill: Number
 });
