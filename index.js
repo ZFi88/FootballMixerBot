@@ -20,6 +20,10 @@ const options = {
 
 bot.onText(/\/add @(.+) (10|[1-9])/, async (msg, match) => {
     const chatId = msg.chat.id;
+    if (!checkUser(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
     const sender = msg.from.username;
     const nick = match[1];
     const skill = match[2];
@@ -34,6 +38,10 @@ bot.onText(/\/add @(.+) (10|[1-9])/, async (msg, match) => {
 
 bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
     const chatId = msg.chat.id;
+    if (!checkUser(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
     const nick = match[1];
     const skill = match[2];
     const player = await Player.findOne({nickName: nick});
@@ -47,13 +55,22 @@ bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
 
 bot.onText(/\/allPlayers/, async (msg, match) => {
     const chatId = msg.chat.id;
+    if (!checkUser(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
     const players = await Player.find({});
-    await bot.sendMessage(chatId, players.map(p => `@${p.nickName} - ${p.skill}`).join('\n'));
+    await bot.sendMessage(chatId, players.map(p => `${p.name ? `[${p.name}](tg://user?id=${p.userId})` : `@${p.nickName}`} - ${p.skill}`).join('\n'), {parse_mode: 'Markdown'});
 });
 
 bot.onText(/\/newMatch/, async (msg, match) => {
     const chatId = msg.chat.id;
+    if (!checkUser(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
     game = new Game();
+    game.chatId = chatId;
     const newMsg = await bot.sendMessage(chatId, `Сегодня новая игра!\r\nУчаствуют:\r\n`, options);
     game.message = newMsg;
 });
@@ -72,28 +89,47 @@ bot.on('callback_query', async (msg) => {
     }
     switch (msg.data) {
         case 'yes':
-            if (!game.goodPlayers.some(p => p.nickName === player.nickName)) game.addGoodPlayer(player);
-            else return;
+            game.addPlayer({player, isGood: true});
             break;
         case 'no':
-            if (!game.badPlayers.some(p => p.nickName === player.nickName)) game.addBadPlayer(player);
-            else return;
+            game.addPlayer({player, isGood: false});
             break;
     }
     await bot.editMessageText(getMatchMessage(), {
         chat_id: chatId,
         message_id: game.message.message_id,
-        parse_mode: 'Markdown'
+        parse_mode: 'Markdown',
+        reply_markup: options.reply_markup
     });
-    await bot.editMessageReplyMarkup(options.reply_markup, {chat_id: chatId, message_id: game.message.message_id});
 });
 
 bot.onText(/\/match/, async (msg, match) => {
     const chatId = msg.chat.id;
+    if (!checkUser(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
     const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
     game.message = newMsg;
 });
 
 function getMatchMessage() {
-    return `Сегодня новая игра!\r\n\r\nИдут ${game.goodPlayers.length}:\r\n${game.goodPlayers.map(p => `[${p.name}](tg://user?id=${p.userId}) ⚽️`).join('\r\n')}\r\nНе идут ${game.badPlayers.length}:\r\n${game.badPlayers.map(p => `[${p.name}](tg://user?id=${p.userId}) 🎮`).join('\r\n')}`;
+    const goodPlayersCount = game.players.filter(obj => obj.isGood).length;
+    const badPlayersCount = game.players.filter(obj => !obj.isGood).length;
+
+    const gooPlayersList = game.players.filter(obj => obj.isGood).map(obj => ` ⚽️[${obj.player.name}](tg://user?id=${obj.player.userId})`).join('\r\n');
+    const badPlayersList = game.players.filter(obj => !obj.isGood).map(obj => ` 🎮 ️[${obj.player.name}](tg://user?id=${obj.player.userId})`).join('\r\n');
+
+    return `Сегодня новая игра!\r\n\r\nИдут ${goodPlayersCount}:\r\n${gooPlayersList}\r\nНе идут ${badPlayersCount}:\r\n${badPlayersList}`;
 }
+
+const admins = ['AntonOstanin', 'vildarkh', 'zhekovfi'];
+
+function checkUser(msg) {
+    return admins.indexOf(msg.from.username) >= 0;
+}
+
+process.on('unhandledRejection', async (reason, p) => {
+    if (reason.response.body.error_code === 429)
+        await bot.sendMessage(game.chatId, 'УГАМАНИТЕСЬ!!!');
+});
