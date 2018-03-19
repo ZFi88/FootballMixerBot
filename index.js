@@ -53,7 +53,7 @@ bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
     }
 });
 
-bot.onText(/\/allPlayers/, async (msg, match) => {
+bot.onText(/\/players/, async (msg, match) => {
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
@@ -63,7 +63,7 @@ bot.onText(/\/allPlayers/, async (msg, match) => {
     await bot.sendMessage(chatId, players.map(p => `${p.name ? `[${p.name}](tg://user?id=${p.userId})` : `@${p.nickName}`} - ${p.skill}`).join('\n'), {parse_mode: 'Markdown'});
 });
 
-bot.onText(/\/newMatch/, async (msg, match) => {
+bot.onText(/\/newgame/, async (msg, match) => {
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
@@ -103,7 +103,7 @@ bot.on('callback_query', async (msg) => {
     });
 });
 
-bot.onText(/\/match/, async (msg, match) => {
+bot.onText(/\/game/, async (msg, match) => {
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
