@@ -19,6 +19,7 @@ const options = {
 };
 
 bot.onText(/\/add @(.+) (10|[1-9])/, async (msg, match) => {
+    log(msg);
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
@@ -37,6 +38,7 @@ bot.onText(/\/add @(.+) (10|[1-9])/, async (msg, match) => {
 });
 
 bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
+    log(msg);
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
@@ -54,6 +56,7 @@ bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
 });
 
 bot.onText(/\/players/, async (msg, match) => {
+    log(msg);
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
@@ -64,6 +67,7 @@ bot.onText(/\/players/, async (msg, match) => {
 });
 
 bot.onText(/\/newgame/, async (msg, match) => {
+    log(msg);
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
@@ -71,7 +75,7 @@ bot.onText(/\/newgame/, async (msg, match) => {
     }
     game = new Game();
     game.chatId = chatId;
-    const newMsg = await bot.sendMessage(chatId, `Сегодня новая игра!\r\nУчаствуют:\r\n`, options);
+    const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
     game.message = newMsg;
 });
 
@@ -104,6 +108,7 @@ bot.on('callback_query', async (msg) => {
 });
 
 bot.onText(/\/game/, async (msg, match) => {
+    log(msg);
     const chatId = msg.chat.id;
     if (!checkUser(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
@@ -118,9 +123,9 @@ function getMatchMessage() {
     const badPlayersCount = game.players.filter(obj => !obj.isGood).length;
 
     const gooPlayersList = game.players.filter(obj => obj.isGood).map(obj => ` ⚽️[${obj.player.name}](tg://user?id=${obj.player.userId})`).join('\r\n');
-    const badPlayersList = game.players.filter(obj => !obj.isGood).map(obj => ` 🎮 ️[${obj.player.name}](tg://user?id=${obj.player.userId})`).join('\r\n');
+    const badPlayersList = game.players.filter(obj => !obj.isGood).map(obj => ` 🍺 ️[${obj.player.name}](tg://user?id=${obj.player.userId})`).join('\r\n');
 
-    return `Сегодня новая игра!\r\n\r\nИдут ${goodPlayersCount}:\r\n${gooPlayersList}\r\nНе идут ${badPlayersCount}:\r\n${badPlayersList}`;
+    return `⚽ Сегодня новая игра! ⚽\r\n\r\nИдут ${goodPlayersCount}:\r\n${gooPlayersList}\r\nНе идут ${badPlayersCount}:\r\n${badPlayersList}`;
 }
 
 const admins = ['AntonOstanin', 'vildarkh', 'zhekovfi'];
@@ -133,3 +138,7 @@ process.on('unhandledRejection', async (reason, p) => {
     if (reason.response.body.error_code === 429)
         await bot.sendMessage(game.chatId, 'УГАМАНИТЕСЬ!!!');
 });
+
+function log(msg){
+    console.log(`[MESSAGE] - From ${msg.from.username} - \"${msg.text}\"`);
+}
