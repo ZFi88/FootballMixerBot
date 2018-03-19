@@ -23,6 +23,10 @@ class Game {
         }
         this.badPlayers.push(player);
     }
+
+    mix() {
+
+    }
 }
 
 module.exports = Game;
