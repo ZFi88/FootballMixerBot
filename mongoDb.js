@@ -6,7 +6,8 @@ mongoose.connect(config.connection);
 const playerSchema = mongoose.Schema({
     nickName: String,
     name: String,
-    skill: Number
+    skill: Number,
+    userId: Number
 });
 
 const Player = mongoose.model('Player', playerSchema);

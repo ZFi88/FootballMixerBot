@@ -10,6 +10,7 @@ const Game = require('./game');
 let game = new Game();
 
 const options = {
+    parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
         inline_keyboard: [
             [{text: 'Иду', callback_data: 'yes'}, {text: 'Не иду', callback_data: 'no'}]
@@ -53,11 +54,8 @@ bot.onText(/\/allPlayers/, async (msg, match) => {
 bot.onText(/\/newMatch/, async (msg, match) => {
     const chatId = msg.chat.id;
     game = new Game();
-
-
     const newMsg = await bot.sendMessage(chatId, `Сегодня новая игра!\r\nУчаствуют:\r\n`, options);
     game.message = newMsg;
-    console.log(newMsg);
 });
 
 bot.on('callback_query', async (msg) => {
@@ -66,6 +64,11 @@ bot.on('callback_query', async (msg) => {
     if (!player) {
         await bot.sendMessage(chatId, `@${msg.from.username} я Вас не знаю, уговорите администратора добавить Вас.`);
         return;
+    }
+    if (!player.name || !player.userId) {
+        player.name = `${msg.from.first_name} ${msg.from.last_name}`;
+        player.userId = msg.from.id;
+        await player.save();
     }
     switch (msg.data) {
         case 'yes':
@@ -79,7 +82,8 @@ bot.on('callback_query', async (msg) => {
     }
     await bot.editMessageText(getMatchMessage(), {
         chat_id: chatId,
-        message_id: game.message.message_id
+        message_id: game.message.message_id,
+        parse_mode: 'Markdown'
     });
     await bot.editMessageReplyMarkup(options.reply_markup, {chat_id: chatId, message_id: game.message.message_id});
 });
@@ -91,5 +95,5 @@ bot.onText(/\/match/, async (msg, match) => {
 });
 
 function getMatchMessage() {
-    return `Сегодня новая игра!\r\n\r\nИдут ${game.goodPlayers.length}:\r\n${game.goodPlayers.map(p => `@${p.nickName} ⚽️`).join('\r\n')}\r\nНе идут ${game.badPlayers.length}:\r\n${game.badPlayers.map(p => `@${p.nickName} 🎮`).join('\r\n')}`;
+    return `Сегодня новая игра!\r\n\r\nИдут ${game.goodPlayers.length}:\r\n${game.goodPlayers.map(p => `[${p.name}](tg://user?id=${p.userId}) ⚽️`).join('\r\n')}\r\nНе идут ${game.badPlayers.length}:\r\n${game.badPlayers.map(p => `[${p.name}](tg://user?id=${p.userId}) 🎮`).join('\r\n')}`;
 }
