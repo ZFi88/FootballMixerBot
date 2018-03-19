@@ -63,7 +63,12 @@ bot.onText(/\/players/, async (msg, match) => {
         return;
     }
     const players = await Player.find({});
-    await bot.sendMessage(chatId, players.map(p => `${p.name ? `[${p.name}](tg://user?id=${p.userId})` : `@${p.nickName}`} - ${p.skill}`).join('\n'), {parse_mode: 'Markdown'});
+    await bot.sendMessage(chatId, players.map(p => {
+
+        if (p.name) {
+            return `[${p.name}](tg://user?id=${p.userId}) - ${p.skill}`;
+        } else return `@${p.nickName} - ${p.skill}`;
+    }).join('\n'), {parse_mode: 'Markdown'});
 });
 
 bot.onText(/\/newgame/, async (msg, match) => {
@@ -139,6 +144,6 @@ process.on('unhandledRejection', async (reason, p) => {
         await bot.sendMessage(game.chatId, 'УГАМАНИТЕСЬ!!!');
 });
 
-function log(msg){
+function log(msg) {
     console.log(`[MESSAGE] - From ${msg.from.username} - \"${msg.text}\". CanEdit - ${canEdit(msg)}`);
 }
