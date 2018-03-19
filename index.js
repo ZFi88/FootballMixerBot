@@ -21,7 +21,7 @@ const options = {
 bot.onText(/\/add @(.+) (10|[1-9])/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
-    if (!checkUser(msg)) {
+    if (!canEdit(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
         return;
     }
@@ -40,7 +40,7 @@ bot.onText(/\/add @(.+) (10|[1-9])/, async (msg, match) => {
 bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
-    if (!checkUser(msg)) {
+    if (!canEdit(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
         return;
     }
@@ -58,7 +58,7 @@ bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
 bot.onText(/\/players/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
-    if (!checkUser(msg)) {
+    if (!canEdit(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
         return;
     }
@@ -69,7 +69,7 @@ bot.onText(/\/players/, async (msg, match) => {
 bot.onText(/\/newgame/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
-    if (!checkUser(msg)) {
+    if (!canEdit(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
         return;
     }
@@ -110,7 +110,7 @@ bot.on('callback_query', async (msg) => {
 bot.onText(/\/game/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
-    if (!checkUser(msg)) {
+    if (!canEdit(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
         return;
     }
@@ -130,7 +130,7 @@ function getMatchMessage() {
 
 const admins = ['AntonOstanin', 'vildarkh', 'zhekovfi'];
 
-function checkUser(msg) {
+function canEdit(msg) {
     return admins.indexOf(msg.from.username) >= 0;
 }
 
