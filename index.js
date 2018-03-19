@@ -140,5 +140,5 @@ process.on('unhandledRejection', async (reason, p) => {
 });
 
 function log(msg){
-    console.log(`[MESSAGE] - From ${msg.from.username} - \"${msg.text}\"`);
+    console.log(`[MESSAGE] - From ${msg.from.username} - \"${msg.text}\". CanEdit - ${canEdit(msg)}`);
 }
