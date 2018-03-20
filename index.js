@@ -66,9 +66,9 @@ bot.onText(/\/players/, async (msg, match) => {
     await bot.sendMessage(chatId, players.map(p => {
 
         if (p.name) {
-            return `[${p.name}](tg://user?id=${p.userId}) - ${p.skill}`;
+            return `<a href=\"tg://user?id=${p.userId}\">${p.name}</a> - ${p.skill}`;
         } else return `@${p.nickName} - ${p.skill}`;
-    }).join('\n'), {parse_mode: 'Markdown'});
+    }).join('\r\n'), {parse_mode: 'HTML'});
 });
 
 bot.onText(/\/newgame/, async (msg, match) => {
