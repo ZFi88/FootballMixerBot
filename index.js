@@ -81,11 +81,11 @@ bot.onText(/\/newgame/, async (msg, match) => {
     game = new Game();
     game.chatId = chatId;
     const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
-    game.message = newMsg;
+    game.votingMessage = newMsg;
 });
 
 bot.on('callback_query', async (msg) => {
-    const chatId = msg.message.chat.id;
+    const chatId = msg.votingMessage.chat.id;
     let player = await Player.findOne({nickName: msg.from.username});
     if (!player) {
         player = await Player.create({nickName: msg.from.username, skill: 5});
@@ -105,21 +105,33 @@ bot.on('callback_query', async (msg) => {
     }
     await bot.editMessageText(getMatchMessage(), {
         chat_id: chatId,
-        message_id: game.message.message_id,
+        message_id: game.votingMessage.message_id,
         parse_mode: 'Markdown',
         reply_markup: options.reply_markup
     });
 });
 
-bot.onText(/\/game/, async (msg, match) => {
+// bot.onText(/\/game/, async (msg, match) => {
+//     log(msg);
+//     const chatId = msg.chat.id;
+//     if (!canEdit(msg)) {
+//         await bot.deleteMessage(chatId, msg.message_id);
+//         return;
+//     }
+//     const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
+//     game.votingMessage = newMsg;
+// });
+
+bot.onText(/\/mix ([1-4]) ([1-3])/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
     if (!canEdit(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
         return;
     }
-    const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
-    game.message = newMsg;
+    const teams = game.mix(match[1], match[2]);
+    const newMsg = await bot.sendMessage(chatId, getTeamsMessage(teams), {parse_mode: 'Markdown'});
+    game.teamsMessage = newMsg;
 });
 
 function getMatchMessage() {
@@ -130,6 +142,16 @@ function getMatchMessage() {
     const badPlayersList = game.players.filter(obj => !obj.isGood).map(obj => ` 🍺 ️[${obj.player.name}](tg://user?id=${obj.player.userId})`).join('\r\n');
 
     return `⚽ Сегодня новая игра! ⚽\r\n\r\nИдут ${goodPlayersCount}:\r\n${gooPlayersList}\r\nНе идут ${badPlayersCount}:\r\n${badPlayersList}`;
+}
+
+function getTeamsMessage(teams) {
+    let result = '';
+    teams.forEach((t, i) => {
+        result += `Команда ${i}\r\n`;
+        t.map(p => ` ⚽️[${p.player.name}](tg://user?id=${p.player.userId})`).join('\r\n');
+        result += '\r\n\r\n';
+    });
+    return result;
 }
 
 const admins = ['AntonOstanin', 'vildarkh', 'zhekovfi'];
