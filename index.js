@@ -88,8 +88,7 @@ bot.on('callback_query', async (msg) => {
     const chatId = msg.message.chat.id;
     const player = await Player.findOne({nickName: msg.from.username});
     if (!player) {
-        await bot.sendMessage(chatId, `@${msg.from.username} я Вас не знаю, уговорите администратора добавить Вас.`);
-        return;
+        await Player.create({nickName: msg.message.from.username, skill: 5});
     }
     if (!player.name || !player.userId) {
         player.name = `${msg.from.first_name} ${msg.from.last_name}`;
