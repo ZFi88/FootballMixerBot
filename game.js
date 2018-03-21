@@ -17,6 +17,7 @@ class Game {
         if (this.players.length === 0) return [];
         let goodPlayers = this.getGoodPlayers();
         let teams = [];
+        let counter = 0;
         while (true) {
             for (let i = 0; i < teamCount; i++) {
                 if (teams.length < teamCount) teams.push([]);
@@ -31,6 +32,7 @@ class Game {
             }
 
             if (goodPlayers.length === 0) {
+                counter++;
                 let isRetry = false;
                 for (let i = 0; i < teams.length; i++) {
                     for (let j = 0; j < teams.length; j++) {
@@ -46,6 +48,7 @@ class Game {
                 }
                 else break;
             }
+            if(counter > 20)break;
         }
         return teams;
     }

@@ -139,7 +139,7 @@ bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
     }
     const teams = game.mix(match[1], match[2], match[3]);
     if (teams.length === 0) {
-        await bot.sendMessage(chatId, 'Ошибка! Начните новое голосование!');
+        await bot.sendMessage(chatId, 'Ошибка! Не могу составить команды!');
         return;
     }
     let teamsMessage = getTeamsMessage(teams);
@@ -166,8 +166,9 @@ function getMatchMessage() {
 function getTeamsMessage(teams) {
     let result = '';
     teams.forEach((t, i) => {
-        result += `⚽ Команда ${i}\r\n`;
-        result += t.map(p => ` 🎮 ️[${p.name}](tg://user?id=${p.userId})`).join('\r\n');
+        const teamSkill = t.map(p=>p.skill).reduce((a,b)=>a+b);
+        result += `⚽ Команда ${i} - 💪(${teamSkill})\r\n `;
+        result += t.map(p => `🎮 ️[${p.name}](tg://user?id=${p.userId}) - 💪(${p.skill})`).join('\r\n');
         result += '\r\n\r\n';
     });
     return result;

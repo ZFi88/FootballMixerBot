@@ -3,3 +3,5 @@ node_modules/
 /config/dev.json
 /config/prod.json
 ecosystem.config.js
+test.js
+/test.js
