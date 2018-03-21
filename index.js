@@ -85,7 +85,7 @@ bot.onText(/\/newgame/, async (msg, match) => {
 });
 
 bot.on('callback_query', async (msg) => {
-    const chatId = msg.votingMessage.chat.id;
+    const chatId = msg.message.chat.id;
     let player = await Player.findOne({nickName: msg.from.username});
     if (!player) {
         player = await Player.create({nickName: msg.from.username, skill: 5});
@@ -111,27 +111,31 @@ bot.on('callback_query', async (msg) => {
     });
 });
 
-// bot.onText(/\/game/, async (msg, match) => {
-//     log(msg);
-//     const chatId = msg.chat.id;
-//     if (!canEdit(msg)) {
-//         await bot.deleteMessage(chatId, msg.message_id);
-//         return;
-//     }
-//     const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
-//     game.votingMessage = newMsg;
-// });
-
-bot.onText(/\/mix ([1-4]) ([1-3])/, async (msg, match) => {
+bot.onText(/\/game/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
     if (!canEdit(msg)) {
         await bot.deleteMessage(chatId, msg.message_id);
         return;
     }
-    const teams = game.mix(match[1], match[2]);
-    const newMsg = await bot.sendMessage(chatId, getTeamsMessage(teams), {parse_mode: 'Markdown'});
-    game.teamsMessage = newMsg;
+    const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
+    game.votingMessage = newMsg;
+});
+
+bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
+    log(msg);
+    const chatId = msg.chat.id;
+    if (!canEdit(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
+    const teams = game.mix(match[1], match[2], match[3]);
+    if (teams.length === 0) {
+        await bot.sendMessage(chatId, 'Ошибка! Начните новое голосование!');
+        return;
+    }
+    let teamsMessage = getTeamsMessage(teams);
+    const newMsg = await bot.sendMessage(chatId, teamsMessage, {parse_mode: 'Markdown'});
 });
 
 function getMatchMessage() {
@@ -147,8 +151,8 @@ function getMatchMessage() {
 function getTeamsMessage(teams) {
     let result = '';
     teams.forEach((t, i) => {
-        result += `Команда ${i}\r\n`;
-        t.map(p => ` ⚽️[${p.player.name}](tg://user?id=${p.player.userId})`).join('\r\n');
+        result += `⚽ Команда ${i}\r\n`;
+        result += t.map(p => ` 🎮 ️[${p.name}](tg://user?id=${p.userId})`).join('\r\n');
         result += '\r\n\r\n';
     });
     return result;
@@ -161,7 +165,7 @@ function canEdit(msg) {
 }
 
 process.on('unhandledRejection', async (reason, p) => {
-    if (reason.response.body.error_code === 429)
+    if (reason.response.body.error_code === 400 | reason.response.body.error_code === 429)
         await bot.sendMessage(game.chatId, 'УГАМАНИТЕСЬ!!!');
 });
 
