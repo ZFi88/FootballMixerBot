@@ -35,6 +35,7 @@ bot.onText(/\/add @(.+) (10|[1-9])/, async (msg, match) => {
         Player.create({nickName: nick, skill: skill});
         await bot.sendMessage(chatId, `Добавлен игрок @${nick}`);
     }
+    await bot.deleteMessage(chatId, msg.message_id);
 });
 
 bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
@@ -53,6 +54,7 @@ bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
     } else {
         await bot.sendMessage(chatId, `Игрок @${nick} не найден`);
     }
+    await bot.deleteMessage(chatId, msg.message_id);
 });
 
 bot.onText(/\/players/, async (msg, match) => {
@@ -69,6 +71,7 @@ bot.onText(/\/players/, async (msg, match) => {
             return `<a href=\"tg://user?id=${p.userId}\">${p.name}</a> - ${p.skill}`;
         } else return `@${p.nickName} - ${p.skill}`;
     }).join('\r\n'), {parse_mode: 'HTML'});
+    await bot.deleteMessage(chatId, msg.message_id);
 });
 
 bot.onText(/\/newgame/, async (msg, match) => {
@@ -82,6 +85,7 @@ bot.onText(/\/newgame/, async (msg, match) => {
     game.chatId = chatId;
     const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
     game.votingMessage = newMsg;
+    await bot.deleteMessage(chatId, msg.message_id);
 });
 
 bot.on('callback_query', async (msg) => {
@@ -120,6 +124,7 @@ bot.onText(/\/game/, async (msg, match) => {
     }
     const newMsg = await bot.sendMessage(chatId, getMatchMessage(), options);
     game.votingMessage = newMsg;
+    await bot.deleteMessage(chatId, msg.message_id);
 });
 
 bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
@@ -135,7 +140,8 @@ bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
         return;
     }
     let teamsMessage = getTeamsMessage(teams);
-    const newMsg = await bot.sendMessage(chatId, teamsMessage, {parse_mode: 'Markdown'});
+    await bot.sendMessage(chatId, teamsMessage, {parse_mode: 'Markdown'});
+    await bot.deleteMessage(chatId, msg.message_id);
 });
 
 function getMatchMessage() {
