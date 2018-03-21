@@ -90,10 +90,10 @@ bot.onText(/\/newgame/, async (msg, match) => {
 
 bot.on('callback_query', async (msg) => {
     const chatId = msg.message.chat.id;
-    let player = await Player.findOne({nickName: msg.from.username});
+    let player = await Player.findOne({userId: msg.from.id});
     if (!player) {
         player = await Player.create({
-            nickName: msg.from.username ? msg.from.username : `${msg.from.first_name} ${msg.from.last_name}`,
+            nickName: !msg.from.username ? `${msg.from.first_name} ${msg.from.last_name}` : msg.from.username,
             skill: 5
         });
     }
