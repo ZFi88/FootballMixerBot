@@ -144,6 +144,12 @@ bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
     await bot.deleteMessage(chatId, msg.message_id);
 });
 
+bot.onText(/^\/(.+)/gm, async (msg, match) => {
+    log(msg);
+    const chatId = msg.chat.id;
+    await bot.deleteMessage(chatId, msg.message_id);
+});
+
 function getMatchMessage() {
     const goodPlayersCount = game.players.filter(obj => obj.isGood).length;
     const badPlayersCount = game.players.filter(obj => !obj.isGood).length;
@@ -171,7 +177,7 @@ function canEdit(msg) {
 }
 
 process.on('unhandledRejection', async (reason, p) => {
-    if (reason.response.body.error_code === 400 | reason.response.body.error_code === 429)
+    if (reason.response.body.error_code === 429)
         await bot.sendMessage(game.chatId, 'УГАМАНИТЕСЬ!!!');
 });
 
