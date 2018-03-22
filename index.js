@@ -167,7 +167,7 @@ function getTeamsMessage(teams) {
     let result = '';
     teams.forEach((t, i) => {
         const teamSkill = t.map(p=>p.skill).reduce((a,b)=>a+b);
-        result += `⚽ Команда ${i} - 💪(${teamSkill})\r\n `;
+        result += `⚽ Команда ${i} - 💪(${teamSkill})\r\n`;
         result += t.map(p => `🎮 ️[${p.name}](tg://user?id=${p.userId}) - 💪(${p.skill})`).join('\r\n');
         result += '\r\n\r\n';
     });
