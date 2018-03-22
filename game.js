@@ -48,7 +48,7 @@ class Game {
                 }
                 else break;
             }
-            if(counter > 20)break;
+            if (counter > 20) break;
         }
         return teams;
     }
@@ -56,6 +56,11 @@ class Game {
     getGoodPlayers() {
         return this.players.filter(obj => obj.isGood)
             .map(obj => obj.player);
+    }
+
+    editPlayer(player) {
+        let p = this.players.find(p => p.userId === player.userId);
+        if (p) p.skill = player.skill;
     }
 }
 

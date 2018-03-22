@@ -51,6 +51,7 @@ bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
     if (player) {
         player.skill = skill;
         player.save();
+        game.editPlayer(player);
     } else {
         await bot.sendMessage(chatId, `Игрок @${nick} не найден`);
     }
