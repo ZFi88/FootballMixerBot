@@ -3,8 +3,10 @@ class Game {
     constructor() {
         this.players = [];
         this.votingMessage = {};
-        this.teamsMessage;
+        this.teamsMessage = {};
         this.chatId = 0;
+
+        this.teams = [];
     }
 
     addPlayer(obj) {
@@ -50,6 +52,8 @@ class Game {
             }
             if (counter > 20) break;
         }
+
+        this.teams = teams;
         return teams;
     }
 
@@ -59,8 +63,8 @@ class Game {
     }
 
     editPlayer(player) {
-        let p = this.players.find(p => p.userId === player.userId);
-        if (p) p.skill = player.skill;
+        let p = this.players.find(p => p.player.userId === player.userId);
+        if (p) p.player.skill = player.skill;
     }
 }
 

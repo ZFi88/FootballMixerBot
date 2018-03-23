@@ -66,12 +66,12 @@ bot.onText(/\/players/, async (msg, match) => {
         return;
     }
     const players = await Player.find({});
-    await bot.sendMessage(chatId, players.map(p => {
-
+    let text = players.map(p => {
         if (p.name) {
-            return `<a href=\"tg://user?id=${p.userId}\">${p.name}</a> - ${p.skill}`;
+            return `${p.name === 'Fedor Zhekov' ? '👑' : ''}<a href=\"tg://user?id=${p.userId}\">${p.name}</a> - ${p.skill}`;
         } else return `@${p.nickName} - ${p.skill}`;
-    }).join('\r\n'), {parse_mode: 'HTML'});
+    }).join('\r\n');
+    await bot.sendMessage(chatId, text, {parse_mode: 'HTML'});
     await bot.deleteMessage(chatId, msg.message_id);
 });
 
@@ -144,12 +144,23 @@ bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
         return;
     }
     let teamsMessage = getTeamsMessage(teams);
-    await bot.sendMessage(chatId, teamsMessage, {parse_mode: 'Markdown'});
+    game.teamsMessage = await bot.sendMessage(chatId, teamsMessage, {parse_mode: 'Markdown'});
+    await bot.deleteMessage(chatId, msg.message_id);
+});
+
+bot.onText(/\/teams/, async (msg, match) => {
+    log(msg);
+    const chatId = msg.chat.id;
+    if (!canEdit(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
+    let teamsMessage = getTeamsMessage(game.teams);
+    game.teamsMessage = await bot.sendMessage(chatId, teamsMessage, {parse_mode: 'Markdown'});
     await bot.deleteMessage(chatId, msg.message_id);
 });
 
 bot.onText(/^\/(.+)/gm, async (msg, match) => {
-    log(msg);
     const chatId = msg.chat.id;
     await bot.deleteMessage(chatId, msg.message_id);
 });
@@ -167,10 +178,9 @@ function getMatchMessage() {
 function getTeamsMessage(teams) {
     let result = '';
     teams.forEach((t, i) => {
-        const teamSkill = t.map(p=>p.skill).reduce((a,b)=>a+b);
-        result += `⚽ Команда ${i} - 💪(${teamSkill})\r\n`;
+        const teamSkill = t.map(p => p.skill).reduce((a, b) => a + b);
+        result += `\r\n⚽ Команда ${i + 1} - 💪(${teamSkill})\r\n`;
         result += t.map(p => `🎮 ️[${p.name}](tg://user?id=${p.userId}) - 💪(${p.skill})`).join('\r\n');
-        result += '\r\n\r\n';
     });
     return result;
 }
