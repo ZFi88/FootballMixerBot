@@ -66,12 +66,13 @@ bot.onText(/\/players/, async (msg, match) => {
         return;
     }
     const players = await Player.find({});
-    let text = players.map(p => {
+    await bot.sendMessage(chatId, players.map(p => {
+
         if (p.name) {
             return `${p.name === 'Fedor Zhekov' ? '👑' : ''}<a href=\"tg://user?id=${p.userId}\">${p.name}</a> - ${p.skill}`;
         } else return `@${p.nickName} - ${p.skill}`;
-    }).join('\r\n');
-    await bot.sendMessage(chatId, text, {parse_mode: 'HTML'});
+    }).join('\r\n'), {parse_mode: 'HTML'});
+
     await bot.deleteMessage(chatId, msg.message_id);
 });
 
