@@ -182,6 +182,7 @@ function getTeamsMessage(teams) {
         const teamSkill = t.map(p => p.skill).reduce((a, b) => a + b);
         result += `\r\n⚽ Команда ${i + 1} - 💪(${teamSkill})\r\n`;
         result += t.map(p => `🎮 ️[${p.name}](tg://user?id=${p.userId}) - 💪(${p.skill})`).join('\r\n');
+        result += '\r\n';
     });
     return result;
 }
