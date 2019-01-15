@@ -7,6 +7,7 @@ class Game {
         this.chatId = 0;
 
         this.teams = [];
+        this.savedState = false;
     }
 
     addPlayer(obj) {
@@ -59,6 +60,11 @@ class Game {
 
     getGoodPlayers() {
         return this.players.filter(obj => obj.isGood)
+            .map(obj => obj.player);
+    }
+
+    getBadPlayers() {
+        return this.players.filter(obj => !obj.isGood)
             .map(obj => obj.player);
     }
 

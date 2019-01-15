@@ -9,6 +9,16 @@ const bot = new TelegramBot(token, {polling: true});
 const Game = require('./game');
 let game = new Game();
 
+// Promise.resolve().then(async () => {
+//     const players = await Player.find({});
+//     players.forEach(x => {
+//             x.games = 0;
+//             x.beer = 0;
+//             x.save();
+//         }
+//     );
+// });
+
 const options = {
     parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
@@ -58,6 +68,32 @@ bot.onText(/\/edit @(.+) (10|[1-9])/, async (msg, match) => {
     await bot.deleteMessage(chatId, msg.message_id);
 });
 
+bot.onText(/\/editGames @(.+) (\d+) (\d+)/, async (msg, match) => {
+    log(msg);
+    const chatId = msg.chat.id;
+    if (!canEdit(msg)) {
+        await bot.deleteMessage(chatId, msg.message_id);
+        return;
+    }
+    const nick = match[1];
+    const games = match[2];
+    const beers = match[3];
+    const player = await Player.findOne({nickName: nick});
+    if (player) {
+        if (games) {
+            player.games = games;
+        }
+        if (beers) {
+            player.beer = beers;
+        }
+        player.save();
+        game.editPlayer(player);
+    } else {
+        await bot.sendMessage(chatId, `Игрок @${nick} не найден`);
+    }
+    await bot.deleteMessage(chatId, msg.message_id);
+});
+
 bot.onText(/\/players/, async (msg, match) => {
     log(msg);
     const chatId = msg.chat.id;
@@ -66,13 +102,18 @@ bot.onText(/\/players/, async (msg, match) => {
         return;
     }
     const players = await Player.find({});
-    await bot.sendMessage(chatId, players.map(p => {
-
+    players.sort((a, b) => a.games < b.games ? 1 : a.games > b.games ? -1 : 0);
+    const message = players.map(p => {
         if (p.name) {
-            return `${p.name === 'Fedor Zhekov' ? '👑' : ''}<a href=\"tg://user?id=${p.userId}\">${p.name}</a> - ${p.skill}`;
-        } else return `@${p.nickName} - ${p.skill}`;
-    }).join('\r\n'), {parse_mode: 'HTML'});
-
+            return `💪${p.skill} ⚽${p.games} 🍺${p.beer} - ${p.name === 'Fedor Zhekov' ? '👑' : ''}<a href=\"tg://user?id=${p.userId}\">${p.name}</a>`;
+        } else
+            return `${p.skill} ⚽${p.games} 🍺${p.beer} - @${p.nickName}`;
+    }).join('\r\n');
+    try {
+        await bot.sendMessage(chatId, message, {parse_mode: 'HTML'});
+    } catch (e) {
+        console.log(e);
+    }
     await bot.deleteMessage(chatId, msg.message_id);
 });
 
@@ -143,6 +184,20 @@ bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
     if (teams.length === 0) {
         await bot.sendMessage(chatId, 'Ошибка! Не могу составить команды!');
         return;
+    }
+    if (!game.savedState) {
+        let goodPlayers = game.getGoodPlayers();
+        goodPlayers.forEach(x => {
+            x.games++;
+            x.save();
+        });
+
+        let badPlayers = game.getBadPlayers();
+        badPlayers.forEach(x => {
+            x.beer++;
+            x.save();
+        });
+        game.savedState = true;
     }
     let teamsMessage = getTeamsMessage(teams);
     game.teamsMessage = await bot.sendMessage(chatId, teamsMessage, {parse_mode: 'Markdown'});

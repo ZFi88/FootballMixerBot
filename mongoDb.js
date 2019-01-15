@@ -7,7 +7,9 @@ const playerSchema = mongoose.Schema({
     nickName: String,
     name: String,
     skill: Number,
-    userId: Number
+    userId: Number,
+    games: Number,
+    beer: Number
 });
 
 const Player = mongoose.model('Player', playerSchema);
