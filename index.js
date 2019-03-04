@@ -9,16 +9,6 @@ const bot = new TelegramBot(token, {polling: true});
 const Game = require('./game');
 let game = new Game();
 
-// Promise.resolve().then(async () => {
-//     const players = await Player.find({});
-//     players.forEach(x => {
-//             x.games = 0;
-//             x.beer = 0;
-//             x.save();
-//         }
-//     );
-// });
-
 const options = {
     parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
@@ -102,6 +92,11 @@ bot.onText(/\/players/, async (msg, match) => {
         return;
     }
     const players = await Player.find({});
+    players.filter(x => !x.games).forEach(x => {
+        x.games = 0;
+        x.beer = 0;
+        x.save();
+    });
     players.sort((a, b) => a.games < b.games ? 1 : a.games > b.games ? -1 : 0);
     const message = players.map(p => {
         if (p.name) {
@@ -188,13 +183,21 @@ bot.onText(/\/mix ([1-4]) (10|[1-9]) (10|[1-9])/, async (msg, match) => {
     if (!game.savedState) {
         let goodPlayers = game.getGoodPlayers();
         goodPlayers.forEach(x => {
-            x.games++;
+            if (!x.games) {
+                x.games = 1;
+            } else {
+                x.games++;
+            }
             x.save();
         });
 
         let badPlayers = game.getBadPlayers();
         badPlayers.forEach(x => {
-            x.beer++;
+            if (!x.beer) {
+                x.beer = 1;
+            } else {
+                x.beer++;
+            }
             x.save();
         });
         game.savedState = true;

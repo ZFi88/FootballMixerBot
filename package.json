@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mongoose": "^5.0.10",
+    "mongoose": "^5.4.17",
     "nconfig": "0.0.6",
     "node-telegram-bot-api": "^0.30.0"
   }
